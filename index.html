@@ -1,0 +1,102 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#151515" />
+  <title>ARCHFORM — Built Different, Built to Last</title>
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css">
+</head>
+<body class="bg-black text-white antialiased">
+  <div class="hero-stage">
+  <main id="home" class="hero-image relative min-h-screen h-screen w-full overflow-hidden">
+    <header id="site-header" class="site-header fixed inset-x-0 top-0 z-40 px-5 pt-4 sm:px-8 sm:pt-5 lg:px-10">
+      <div class="flex items-center justify-between">
+        <a href="#home" aria-label="ARCHFORM home" class="brand-mark nav-enter nav-delay-1 text-[1.4rem] font-semibold tracking-[-0.065em] sm:text-[1.7rem]">
+          ARCHFORM
+        </a>
+
+        <nav aria-label="Main navigation" class="desktop-nav absolute left-1/2 top-1/2 hidden -translate-x-1/2 -translate-y-1/2 items-center gap-4 text-[13px] font-semibold uppercase tracking-[-0.02em] lg:flex xl:gap-5">
+          <a class="nav-link nav-enter nav-delay-2" href="#home">Home</a>
+          <a class="nav-link nav-enter nav-delay-3" href="#studio">Studio</a>
+          <a class="nav-link nav-enter nav-delay-4" href="#projects">Projects</a>
+          <a class="nav-link nav-enter nav-delay-5" href="#journals">Journals</a>
+          <a class="nav-link nav-enter nav-delay-6" href="#gallery">Gallery</a>
+        </nav>
+
+        <div class="flex items-center gap-3">
+          <a href="mailto:hello@archform.studio" class="contact-button nav-enter nav-delay-3 hidden items-center gap-2 rounded-full bg-black px-5 py-3 text-[11px] font-semibold uppercase tracking-[-0.015em] sm:inline-flex sm:px-6 sm:text-xs">
+            <span aria-hidden="true" class="contact-icon text-[14px] leading-none">↗</span>
+            Contact us
+          </a>
+
+          <button class="menu-button nav-enter nav-delay-3 inline-flex items-center gap-2 rounded-full border border-white/30 bg-black px-5 py-3 text-[11px] font-semibold uppercase tracking-wide sm:text-xs"
+            type="button" aria-label="Open navigation menu" aria-expanded="false" aria-controls="mobile-navigation">
+            <span class="menu-label">Menu</span>
+            <span class="menu-icon text-[14px] leading-none">↗</span>
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <div id="mobile-navigation" class="mobile-panel" data-open="false" aria-hidden="true">
+      <div class="mobile-panel-inner">
+        <nav aria-label="Mobile navigation" class="mobile-nav-list">
+          <a class="mobile-link" href="#home">Home</a>
+          <a class="mobile-link" href="#studio">Studio</a>
+          <a class="mobile-link" href="#projects">Projects</a>
+          <a class="mobile-link" href="#journals">Journals</a>
+          <a class="mobile-link" href="#gallery">Gallery</a>
+          <a class="mobile-link" href="mailto:hello@archform.studio">Contact us</a>
+        </nav>
+      </div>
+    </div>
+
+    <section class="absolute inset-x-0 bottom-0 flex items-end px-6 pb-10 sm:px-8 sm:pb-12 lg:px-10 lg:pb-14">
+      <h1 class="hero-title max-w-[1000px] text-[clamp(2.8rem,7.1vw,7rem)] uppercase leading-[0.9]">
+        Built different,<br />built to last
+      </h1>
+    </section>
+
+    <!-- <div class="scroll-cue absolute bottom-6 right-6 hidden items-center gap-2 text-[10px] font-medium uppercase tracking-[0.18em] text-white/80 sm:flex lg:right-10">
+      <span class="h-px w-8 bg-white/70"></span> Scroll to explore
+    </div> -->
+  </main>
+  </div>
+
+  <section id="studio" class="studio-section">
+    <div class="studio-kicker studio-reveal">Our studio</div>
+    <div class="studio-layout">
+      <div class="studio-visual">
+        <h2 class="studio-title studio-reveal">Design you<br />can feel</h2>
+        <div class="studio-photo-wrap studio-reveal">
+          <img class="studio-photo" src="./asset/img/studio.avif" alt="Designer reviewing architectural plans in the studio" />
+        </div>
+      </div>
+
+      <div class="studio-copy">
+        <h3 class="studio-manifesto studio-reveal" id="studio-manifesto">
+          <span class="travelling-we" aria-hidden="true">We</span>
+          <span class="manifesto-line"><span class="manifesto-text">keep exploring.</span></span>
+          <span class="manifesto-line"><span class="manifesto-text">work together.</span></span>
+          <span class="manifesto-line"><span class="manifesto-text">grow brilliance.</span></span>
+          <span class="manifesto-line"><span class="manifesto-text">shape tomorrow.</span></span>
+        </h3>
+        <p class="studio-paragraph studio-reveal">
+          We partner with clients from day one, ensuring clear communication and expert guidance at every stage. Collaborating seamlessly with builders, consultants, and other specialists, we work to keep each project on track and deliver results that exceed our shared ambitions.
+        </p>
+        <p class="studio-paragraph studio-reveal">
+          While our aesthetic remains distinct, every project is shaped by its own unique character—born from our clients’ aspirations, the site’s potential, and the creative vision of our architectural team.
+        </p>
+        <a class="studio-cta studio-reveal" href="mailto:hello@archform.studio"><span aria-hidden="true">◦</span> Explore more about us</a>
+      </div>
+    </div>
+  </section>
+<script src="./main.js"></script>
+</body>
+</html>
