@@ -11,7 +11,7 @@ const menuToggle = document.querySelector(".menu-button");
     document.body.append(mobilePanel);
     const studioSection = document.querySelector("#studio");
     const studioPhoto = document.querySelector(".studio-photo");
-    const revealItems = document.querySelectorAll(".studio-reveal");
+    const revealItems = document.querySelectorAll(".studio-reveal, .project-item");
     const finalStudioParagraph = document.querySelector(".studio-copy .studio-paragraph:last-of-type");
     const studioCta = document.querySelector(".studio-copy .studio-cta");
 
@@ -85,17 +85,55 @@ const menuToggle = document.querySelector(".menu-button");
       travellingWe.style.transform = `translate3d(${(x1 + (x2 - x1) * blend).toFixed(1)}px, ${(y1 + (y2 - y1) * blend).toFixed(1)}px, 0)`;
       manifesto.classList.toggle("is-tracking", manifestoRect.top < window.innerHeight * 0.95 && manifestoRect.bottom > 0);
     }
+    // "What we do" accordion — one open at a time.
+    const serviceItems = Array.from(document.querySelectorAll(".service-item"));
+    serviceItems.forEach((item) => {
+      const header = item.querySelector(".service-header");
+      header.addEventListener("click", () => {
+        const isOpen = item.classList.contains("is-open");
+        serviceItems.forEach((other) => {
+          other.classList.remove("is-open");
+          other.querySelector(".service-header").setAttribute("aria-expanded", "false");
+        });
+        if (!isOpen) {
+          item.classList.add("is-open");
+          header.setAttribute("aria-expanded", "true");
+        }
+      });
+    });
+
+    const projectItems = Array.from(document.querySelectorAll(".project-item"));
+    const MAX_PROJECT_SHIFT = 90; // px, desktop only
+
+    function updateProjectShift() {
+      if (!projectItems.length || window.innerWidth < 768) return;
+      const viewportH = window.innerHeight;
+      const viewportCenter = viewportH / 2;
+
+      projectItems.forEach((item) => {
+        const dir = item.dataset.dir === "left" ? -1 : 1;
+        const rect = item.getBoundingClientRect();
+        const itemCenter = rect.top + rect.height / 2;
+        // -1 (above center) .. 0 (centered) .. 1 (below center)
+        const progress = Math.max(-1, Math.min(1, (itemCenter - viewportCenter) / viewportCenter));
+        const shift = dir * progress * MAX_PROJECT_SHIFT;
+        item.style.setProperty("--project-shift", `${shift.toFixed(1)}px`);
+      });
+    }
+
     let scrollFrame = 0;
     function requestScrollUpdate() {
       if (scrollFrame) return;
       scrollFrame = requestAnimationFrame(() => {
         updateScrollEffects();
+        updateProjectShift();
         scrollFrame = 0;
       });
     }
     window.addEventListener("scroll", requestScrollUpdate, { passive: true });
     window.addEventListener("resize", requestScrollUpdate);
     updateScrollEffects();
+    updateProjectShift();
 
 
     function setMenu(open) {
