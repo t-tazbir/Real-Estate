@@ -121,19 +121,182 @@ const menuToggle = document.querySelector(".menu-button");
       });
     }
 
+    // The steps share a sticky track: each next card moves from the viewport
+    // bottom to the top while the preceding step remains pinned beneath it.
+    // Separate progress values drive the card, copy, and image parallax layers.
+    const processSteps = Array.from(document.querySelectorAll(".process-step"));
+    const reduceProcessMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
+
+    function updateProcessStack() {
+      if (!processSteps.length) return;
+      // Match the travel distance to the actual 100svh card height. On mobile
+      // this stays aligned with the stable small viewport as browser chrome moves.
+      const viewportH = processSteps[0].getBoundingClientRect().height
+        || window.innerHeight
+        || document.documentElement.clientHeight;
+      if (!viewportH) return;
+
+      const stepTops = processSteps.map((step) => step.getBoundingClientRect().top);
+      processSteps.forEach((step, index) => {
+        const item = step.querySelector(".process-item");
+        step.style.setProperty("--process-layer", String(index + 1));
+        if (!item) return;
+
+        // A step enters while its top moves from the viewport bottom to 0.
+        const stepTop = stepTops[index];
+        const enterProgress = Math.max(0, Math.min(1, 1 - Math.max(0, stepTop) / viewportH));
+        const next = processSteps[index + 1];
+        const exitProgress = next
+          ? Math.max(0, Math.min(1, 1 - stepTops[index + 1] / viewportH))
+          : 0;
+        const enter = reduceProcessMotion.matches ? 1 : enterProgress;
+        const exit = reduceProcessMotion.matches ? 0 : exitProgress;
+
+        // Anchor the card to its step's viewport position, then translate it
+        // from one full viewport below to the pinned top using scroll progress.
+        // Reduced motion keeps it in normal step flow and removes that travel.
+        const stepAnchor = reduceProcessMotion.matches ? 0 : -Math.max(0, stepTop);
+        step.style.setProperty("--process-step-anchor", `${stepAnchor.toFixed(1)}px`);
+        item.style.setProperty("--process-enter-progress", enter.toFixed(3));
+        item.style.setProperty("--process-exit-progress", exit.toFixed(3));
+        item.style.setProperty("--process-enter-translate", `${((1 - enter) * viewportH).toFixed(1)}px`);
+        item.style.setProperty("--process-card-y", `${(10 * (1 - enter) - 14 * exit).toFixed(1)}px`);
+        item.style.setProperty("--process-content-y", `${(34 * (1 - enter) - 48 * exit).toFixed(1)}px`);
+        item.style.setProperty("--process-progress", exit.toFixed(3));
+
+        const image = step.querySelector(".process-image");
+        if (image) {
+          // Counter-move the enlarged image by 8% of its own height as the
+          // card enters, then add a small outgoing drift as the next card covers it.
+          const imageShift = reduceProcessMotion.matches ? 0 : 8 * (0.5 - enter) - 1.75 * exit;
+          image.style.setProperty("--process-image-shift", `${imageShift.toFixed(2)}%`);
+        }
+      });
+    }
+
     let scrollFrame = 0;
     function requestScrollUpdate() {
       if (scrollFrame) return;
       scrollFrame = requestAnimationFrame(() => {
         updateScrollEffects();
         updateProjectShift();
+        updateProcessStack();
         scrollFrame = 0;
       });
     }
     window.addEventListener("scroll", requestScrollUpdate, { passive: true });
     window.addEventListener("resize", requestScrollUpdate);
+    if (reduceProcessMotion.addEventListener) {
+      reduceProcessMotion.addEventListener("change", requestScrollUpdate);
+    } else {
+      reduceProcessMotion.addListener?.(requestScrollUpdate);
+    }
     updateScrollEffects();
     updateProjectShift();
+    updateProcessStack();
+
+    // Five original collection images with one clone at each end make the
+    // transition continuous; the clones are snapped past after their motion.
+    const collectionViewport = document.querySelector(".collection-viewport");
+    const collectionTrack = document.querySelector(".collection-track");
+    const collectionPrevious = document.querySelector(".collection-previous");
+    const collectionNext = document.querySelector(".collection-next");
+    const collectionStatus = document.querySelector(".collection-status");
+    const collectionSlides = collectionTrack
+      ? Array.from(collectionTrack.querySelectorAll(".collection-slide"))
+      : [];
+
+    if (collectionViewport && collectionTrack && collectionSlides.length === 5) {
+      const makeCollectionClone = (slide) => {
+        const clone = slide.cloneNode(true);
+        clone.dataset.clone = "true";
+        clone.setAttribute("aria-hidden", "true");
+        clone.removeAttribute("aria-label");
+        const image = clone.querySelector("img");
+        if (image) image.alt = "";
+        return clone;
+      };
+
+      collectionTrack.insertBefore(makeCollectionClone(collectionSlides[4]), collectionSlides[0]);
+      collectionTrack.append(makeCollectionClone(collectionSlides[0]));
+      let collectionIndex = 1;
+      let collectionMoving = false;
+
+      function updateCollectionState() {
+        const realIndex = (collectionIndex - 1 + collectionSlides.length) % collectionSlides.length;
+        Array.from(collectionTrack.children).forEach((slide, index) => {
+          slide.classList.toggle("is-active", index === collectionIndex);
+          slide.classList.toggle("is-previous", index === collectionIndex - 1);
+          slide.classList.toggle("is-next", index === collectionIndex + 1);
+        });
+        collectionSlides.forEach((slide, index) => {
+          slide.setAttribute("aria-hidden", String(index !== realIndex));
+        });
+        collectionStatus.textContent = `Image ${realIndex + 1} of ${collectionSlides.length}`;
+      }
+
+      function updateCollectionOffset(animate = true) {
+        const activeSlide = collectionTrack.children[collectionIndex];
+        if (!activeSlide) return;
+        collectionTrack.classList.toggle("is-snapping", !animate);
+        const slotWidth = collectionViewport.clientWidth / 3;
+        collectionTrack.style.setProperty("--collection-slot-width", `${slotWidth.toFixed(2)}px`);
+        const slideCenter = activeSlide.offsetLeft + activeSlide.offsetWidth / 2;
+        const offset = collectionViewport.clientWidth / 2 - slideCenter;
+        collectionTrack.style.setProperty("--collection-offset", `${offset.toFixed(1)}px`);
+        if (!animate) {
+          // Commit the no-transition position before restoring animated moves.
+          void collectionTrack.offsetWidth;
+          requestAnimationFrame(() => collectionTrack.classList.remove("is-snapping"));
+        }
+      }
+
+      function finishCollectionMove() {
+        if (collectionIndex === 0) collectionIndex = collectionSlides.length;
+        if (collectionIndex === collectionSlides.length + 1) collectionIndex = 1;
+        updateCollectionState();
+        updateCollectionOffset(false);
+        collectionMoving = false;
+        collectionPrevious.disabled = false;
+        collectionNext.disabled = false;
+      }
+
+      function moveCollection(direction) {
+        if (collectionMoving) return;
+        collectionMoving = true;
+        collectionPrevious.disabled = true;
+        collectionNext.disabled = true;
+        collectionIndex += direction;
+        updateCollectionState();
+        updateCollectionOffset(!reduceProcessMotion.matches);
+        if (reduceProcessMotion.matches) finishCollectionMove();
+      }
+
+      collectionTrack.addEventListener("transitionend", (event) => {
+        if (event.target === collectionTrack && event.propertyName === "transform" && collectionMoving) {
+          finishCollectionMove();
+        }
+      });
+      collectionPrevious.addEventListener("click", () => moveCollection(-1));
+      collectionNext.addEventListener("click", () => moveCollection(1));
+      updateCollectionState();
+      updateCollectionOffset(false);
+
+      function handleCollectionResize() {
+        if (collectionMoving) finishCollectionMove();
+        else updateCollectionOffset(false);
+      }
+
+      if ("ResizeObserver" in window) {
+        const collectionResizeObserver = new ResizeObserver(handleCollectionResize);
+        collectionResizeObserver.observe(collectionViewport);
+      } else {
+        window.addEventListener("resize", handleCollectionResize);
+      }
+      reduceProcessMotion.addEventListener?.("change", () => {
+        if (reduceProcessMotion.matches && collectionMoving) finishCollectionMove();
+      });
+    }
 
 
     function setMenu(open) {
